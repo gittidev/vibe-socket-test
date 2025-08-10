@@ -1,0 +1,78 @@
+좋아요, 지금까지 논의한 내용을 정리하면 이렇게 됩니다.
+
+---
+
+## **1. 주제**
+
+* **프론트엔드 ↔ 백엔드 간 스레드를 활용한 환자 데이터 전송 서비스**
+* **DB는 Redis** 사용
+* 주로 **수신(다운로드)** 용도가 많지만, 업로드도 가능하게 설계
+
+---
+
+## **2. 핵심 개념 정리 (쉬운 비유 포함)**
+
+| 용어                   | 설명                          | 비유         |
+| -------------------- | --------------------------- | ---------- |
+| **스레드(Thread)**      | 동시에 작업을 처리하는 실행 단위          | 여러 명의 직원   |
+| **Web Worker**       | 무거운 작업을 백그라운드에서 처리          | 비서         |
+| **Service Worker**   | 오프라인 큐잉, 백그라운드 전송           | 우체국 직원     |
+| **Shared Worker**    | 여러 탭에서 연결/작업 공유             | 공유 비서      |
+| **IndexedDB / OPFS** | 브라우저 로컬 저장소                 | 창고         |
+| **멱등성(Idempotency)** | 중복 요청도 결과는 1번만 반영           | 같은 송장번호 택배 |
+| **dedupeId**         | 멱등 키(고유 요청 ID)              | 송장번호       |
+| **순서 보장(seq)**       | 데이터 순서를 지키는 번호              | 책 페이지 번호   |
+| **threadId**         | 특정 작업 흐름의 고유 ID             | 책 제목       |
+| **Backpressure**     | 서버 과부하 방지 속도 조절             | 수도꼭지 잠금    |
+| **ACK**              | 데이터 수신 확인 신호                | 배송 완료 문자   |
+| **Envelope**         | 데이터와 메타 정보를 함께 담는 구조        | 편지 봉투      |
+| **Web Crypto API**   | 브라우저 내 암호화 기능               | 금고         |
+| **Redis**            | 빠른 임시 저장소(Pub/Sub, Streams) | 물류센터       |
+
+---
+
+## **3. 데이터 흐름 (양방향)**
+
+**전송(업로드)**
+
+1. 프론트: Worker에서 암호화 → Envelope 생성 → IndexedDB 큐 저장
+2. 서버: Redis Streams에 저장, 멱등 처리, Pub/Sub로 브로드캐스트
+3. 프론트: ACK 수신 → 큐에서 제거
+
+**수신(다운로드)**
+
+1. 프론트: threadId 구독(WebSocket/SSE)
+2. 서버: Redis Pub/Sub → 해당 구독자에게 메시지 전달
+3. 프론트: Worker에서 복호화 → UI 반영
+
+---
+
+## **4. 구현 예시**
+
+* **프론트엔드**
+
+  * Envelope 생성기 (`makeEnvelope`)
+  * IndexedDB 기반 전송 큐 (`queueAdd`, `queueTake`, `queueDelete`)
+  * Service Worker로 오프라인 큐 처리 & 백그라운드 Sync
+  * `useThreadSender` 훅: 전송, 즉시 Flush
+  * `useThreadReceiver` 훅: WebSocket 수신
+* **백엔드 (Express + ioredis)**
+
+  * `/api/threads/push-batch` 배치 업로드 API
+  * `/api/threads/:threadId/recent` 최근 N개 조회 API
+  * WebSocket 서버: threadId 구독 → Redis Pub/Sub 메시지 전달
+  * Redis Streams로 순서·멱등성 관리
+
+---
+
+## **5. 확장/실전 적용 시 고려사항**
+
+* **AES-GCM 암호화** 및 키 관리
+* **payloadHash**로 무결성 검증
+* **seq**로 순서·누락 감지 + 재전송 API
+* **Backpressure** 신호 처리
+* **다중 탭 동시 실행 방지** (SharedWorker / BroadcastChannel)
+* **감사 로그**(민감 정보 제외)
+
+---
+
