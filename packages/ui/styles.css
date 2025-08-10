@@ -1,0 +1,59 @@
+:root {
+  --background: #FFFFFF;
+  --text: #1F2937;
+  --primary-accent: #3B82F6;
+  --secondary-accent: #F3F4F6;
+  --danger: #ef4444;
+  --warn: #f59e0b;
+  --card-bg: #FFFFFF;
+  --card-border: #E5E7EB;
+  --button-bg: #3B82F6;
+  --button-text: #FFFFFF;
+  --button-hover-bg: #2563EB;
+}
+
+.dark {
+  --background: #111827;
+  --text: #F9FAFB;
+  --primary-accent: #60A5FA;
+  --secondary-accent: #1F2937;
+  --card-bg: #1F2937;
+  --card-border: #374151;
+  --button-bg: #60A5FA;
+  --button-text: #111827;
+  --button-hover-bg: #3B82F6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    --text: #F9FAFB;
+    --primary-accent: #60A5FA;
+    --secondary-accent: #1F2937;
+    --card-bg: #1F2937;
+    --card-border: #374151;
+    --button-bg: #60A5FA;
+    --button-text: #111827;
+    --button-hover-bg: #3B82F6;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+}
+
+.ui-container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+.ui-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; }
+.ui-grid { display: grid; gap: 16px; }
+.ui-grid.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.ui-grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.ui-btn { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--primary-accent); background: var(--button-bg); color: var(--button-text); cursor: pointer; transition: background-color 0.2s; }
+.ui-btn:hover { background-color: var(--button-hover-bg); }
+.ui-btn.primary { background: var(--primary-accent); color: var(--button-text); border-color: transparent; }
+.ui-btn.danger { background: var(--danger); color: #FFFFFF; border-color: transparent; }
+.ui-btn.warn { background: var(--warn); color: #FFFFFF; border-color: transparent; }
+.ui-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background-color: var(--secondary-accent); color: var(--text); font-size: 12px; }
+.ui-table { width: 100%; border-collapse: collapse; }
+.ui-table th, .ui-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--card-border); }
+@media (max-width: 860px) { .ui-grid.cols-2, .ui-grid.cols-3 { grid-template-columns: 1fr; } }

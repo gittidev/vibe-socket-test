@@ -1,0 +1,6 @@
+ > [main-web stage-1 3/3] COPY --from=builder /app/dist /usr/share/nginx/html:
+------
+------
+ > [patient-web stage-1 3/3] COPY --from=builder /app/dist /usr/share/nginx/html:
+------
+failed to solve: failed to compute cache key: failed to calculate checksum of ref ueeue0yhntho7cbuedrz7cqye::uj9c3nh5ld3rrpeqgmrb8fkz0: "/app/dist": not found
